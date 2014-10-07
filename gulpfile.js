@@ -9,10 +9,6 @@ var gulp = require('gulp'),
     path = require('path'),
     livereload = require('gulp-livereload')();
 
-var sourceFiles = {
-    ionic: '../tlvpClient/www/**/*.*'
-};
-
 var app = express();
 
 var wwwSlug = 'www';
@@ -35,6 +31,17 @@ if(!(/\/$/.test(serverBasePath))){
 }
 // console.log('bd: ', baseDir);
 // console.log('sbp: ', serverBasePath);
+
+var sourceFiles = {
+    ionic: baseDir + 'www/**/*.*'
+};
+
+app.all('*', function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    next();
+});
+
 
 app.use(serverBasePath, express.static(path.resolve(baseDir) + '/www'));
 app.use(serverBasePath + 'cordova.js', express.static(path.resolve(baseDir + cordovaSlug)));
@@ -77,12 +84,13 @@ gulp.task('help', function(){
 });
 
 gulp.task('default', function() {
+	livereload.changed();
 	console.log(colors.bold.white('\nFirst time here? Not sure what to do? Type "gulp help"\n'));
     // creating a separate watcher for each file type/directory
     _.forEach(sourceFiles, function(files, key) {
         gulp.watch(files).on('change', function(file){
-	        gutil.log(colors.red(colors.blue(colors.bgYellow(path.relative(__dirname, file.path))),
-		        colors.red(' changed')));
+	        console.log(colors.red.bgYellow(path.relative(__dirname, file.path)),
+		        colors.red(' changed'));
             if(key === 'less'){
                 gulp.src(file.path)
                     .pipe(less())
